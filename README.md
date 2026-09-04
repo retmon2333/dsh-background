@@ -34,7 +34,7 @@ DeepSeek Harness（DSH）Web 背景壁纸插件。标准 DSH bundle + client 插
 - **启用开关**：关闭后还原默认 UI，设置项变灰
 - **单张图片 / 文件夹轮播**：本机路径；顺序或随机；间隔与叠化
 - **画面调节**：填充方式、透明度、模糊、遮罩颜色／透明度、面板透明度
-- **扩展半透明**：左侧栏、消息输入框（默认开）；对话列与轨迹等主区透出壁纸
+- **扩展半透明**：左侧栏、消息输入框（均默认开）；对话列与轨迹等主区透出壁纸
 - **特效**：樱花／雪花飘落（密度、速度可调）
 - **设置入口**：设置 → 背景
 
@@ -204,10 +204,10 @@ HTTP 路由自检（宿主启动后、`http://127.0.0.1:3080`）：
 
 ```powershell
 # 单图模式：返回图片字节（未配置时 400 image-not-configured）
-curl -o NUL -w "%{http_code}`n" http://127.0.0.1:3080/dsh-background/file
+curl.exe -o NUL -w "%{http_code}`n" http://127.0.0.1:3080/dsh-background/file
 
 # 文件夹模式：返回 JSON { folder, images[] }（未配置时 400）
-curl http://127.0.0.1:3080/dsh-background/folder/list
+curl.exe http://127.0.0.1:3080/dsh-background/folder/list
 ```
 
 > macOS/Linux 用 `curl -o /dev/null -w "%{http_code}\n" ...`。

@@ -49,7 +49,7 @@ export const BACKGROUND_DEFAULTS: BackgroundSettings = {
   overlayOpacity: 20,
   overlayColor: '#000000',
   surface: 40,
-  extendChrome: false,
+  extendChrome: true,
   extendComposer: true,
   effectEnabled: true,
   effectKind: 'sakura',
