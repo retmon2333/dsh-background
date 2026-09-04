@@ -42,11 +42,13 @@ const nodeHalf: UserConfig = {
   dts: false,
   clean: true,
   fixedExtension: false,
-  external: [
-    '@deepseek-ai/cordis',
-    '@deepseek-ai/dsh-settings',
-    '@deepseek-ai/schemastery',
-  ],
+  deps: {
+    neverBundle: [
+      '@deepseek-ai/cordis',
+      '@deepseek-ai/dsh-settings',
+      '@deepseek-ai/schemastery',
+    ],
+  },
   outputOptions: {
     entryFileNames: 'index.js',
   },
@@ -61,8 +63,10 @@ const clientHalf: UserConfig = {
   dts: false,
   sourcemap: true,
   clean: false,
-  external: [...CLIENT_EXTERNALS],
-  noExternal: (id: string) => (CLIENT_EXTERNALS.includes(id) ? undefined : true),
+  deps: {
+    neverBundle: [...CLIENT_EXTERNALS],
+    alwaysBundle: (id) => (CLIENT_EXTERNALS.includes(id) ? undefined : true),
+  },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'production'),
     'import.meta.env.MODE': JSON.stringify(process.env.NODE_ENV ?? 'production'),

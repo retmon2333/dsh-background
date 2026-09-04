@@ -13,7 +13,6 @@ export type BackgroundKey =
   | 'imagePathHint'
   | 'browseFolder'
   | 'browseImage'
-  | 'pickImage'
   | 'clearImage'
   | 'folderPath'
   | 'folderPathHint'
@@ -69,7 +68,6 @@ export const zh: Record<BackgroundKey, string> = {
   imagePathHint: '点击「选择图片」打开系统文件对话框（仅图片），或粘贴本机绝对路径。',
   browseFolder: '选择文件夹…',
   browseImage: '选择图片…',
-  pickImage: '从文件夹挑选',
   clearImage: '清除路径',
   folderPath: '文件夹路径',
   folderPathHint: '通过系统目录选择器选取，或手动粘贴绝对路径。',
@@ -126,7 +124,6 @@ export const en: Record<BackgroundKey, string> = {
   imagePathHint: 'Use “Choose image” for a system image file dialog, or paste an absolute path.',
   browseFolder: 'Choose folder…',
   browseImage: 'Choose image…',
-  pickImage: 'Pick from folder',
   clearImage: 'Clear path',
   folderPath: 'Folder path',
   folderPathHint: 'Use the system directory picker, or paste an absolute path.',

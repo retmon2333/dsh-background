@@ -65,11 +65,6 @@ function surfaceToken(settings: BackgroundSettings): string {
     : `rgba(255, 255, 255, ${alpha})`
 }
 
-function joinPath(dir: string, name: string): string {
-  const sep = dir.includes('\\') ? '\\' : '/'
-  return `${dir.replace(/[\\/]+$/, '')}${sep}${name}`
-}
-
 function shuffleIndices(length: number): number[] {
   const indices = Array.from({ length }, (_, i) => i)
   for (let i = indices.length - 1; i > 0; i -= 1) {
@@ -114,8 +109,6 @@ export class BackgroundController {
   private listedFolder = ''
   private unsubScope: (() => void) | undefined
   private themeObserver: MutationObserver | undefined
-  private reducedMotion = false
-  private mq: MediaQueryList | undefined
   private effects = new EffectLayer()
   private fadeToken = 0
   private fading = false
@@ -135,14 +128,6 @@ export class BackgroundController {
   /** Bind DOM + settings subscription; returns disposer. */
   start(): () => void {
     this.ensureDom()
-    this.mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    this.reducedMotion = this.mq.matches
-    const onMq = (): void => {
-      this.reducedMotion = this.mq?.matches ?? false
-      this.timerKey = ''
-      this.ensureCarouselTimer()
-    }
-    this.mq.addEventListener?.('change', onMq)
 
     this.unsubScope = this.scope.subscribe(() => { this.onScope() })
     this.onScope()
@@ -156,7 +141,6 @@ export class BackgroundController {
     }
 
     return () => {
-      this.mq?.removeEventListener?.('change', onMq)
       this.themeObserver?.disconnect()
       this.themeObserver = undefined
       this.unsubScope?.()
@@ -236,11 +220,6 @@ export class BackgroundController {
       })
       this.syncPresentation(false)
     }
-  }
-
-  pickFolderImage(name: string): Promise<void> {
-    const full = joinPath(this.state.folder || this.state.settings.folderPath, name)
-    return this.setField('imagePath', full)
   }
 
   /** Host-native image file dialog; null = cancelled or unavailable. */
@@ -370,7 +349,7 @@ export class BackgroundController {
     const interval = clampInterval(settings.intervalSeconds)
     const fade = clampCrossfade(settings.crossfadeSeconds)
     const key = shouldRun
-      ? `run:${interval}:${fade}:${images.length}:${settings.folderOrder}:${this.reducedMotion ? 1 : 0}`
+      ? `run:${interval}:${fade}:${images.length}:${settings.folderOrder}`
       : 'off'
     if (key === this.timerKey) return
     if (this.timer !== undefined) {
@@ -387,7 +366,7 @@ export class BackgroundController {
 
   private fileUrl(settings: BackgroundSettings): string | null {
     if (settings.imagePath === '') return null
-    return `${ROUTE_FILE}?p=${encodeURIComponent(settings.imagePath)}`
+    return ROUTE_FILE
   }
 
   private currentFolderUrl(): string | null {
@@ -411,7 +390,6 @@ export class BackgroundController {
     if (this.state.settings.folderOrder === 'random' && this.carouselIndex === 0) {
       this.randomOrder = shuffleIndices(n)
     }
-    const url = this.currentFolderUrl()
     this.syncPresentation(true)
   }
 
