@@ -368,6 +368,29 @@ function handlePickFolder() {
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
+/** Hard cap on the total size of the uploads directory (defends against unauthenticated disk-fill). */
+const MAX_UPLOAD_DIR_BYTES = 100 * 1024 * 1024
+
+/**
+ * Identify a decoded image from its leading bytes (magic numbers).
+ * Returns the canonical extension, or null if the payload is not a supported image.
+ * This is the real content gate for uploads — the client filename is only a hint.
+ */
+function sniffImageFormat(bytes: Uint8Array): string | null {
+  if (bytes.length < 12) return null
+  const b = bytes
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return '.jpg'
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 && b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a) return '.png'
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38 && (b[4] === 0x37 || b[4] === 0x39) && b[5] === 0x61) return '.gif'
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return '.webp'
+  if (b[0] === 0x42 && b[1] === 0x4d) return '.bmp'
+  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) {
+    const brand = String.fromCharCode(b[8], b[9], b[10], b[11])
+    if (brand === 'avif' || brand === 'avis' || brand === 'mif1') return '.avif'
+  }
+  return null
+}
+
 function handleUpload() {
   return async (request: IncomingMessage, response: ServerResponse) => {
     if (request.method !== 'POST') {
@@ -375,13 +398,7 @@ function handleUpload() {
       response.end()
       return
     }
-    const filenameHeader = request.headers['x-filename']
-    const rawName = typeof filenameHeader === 'string' ? path.basename(filenameHeader) : 'upload.bin'
-    const ext = path.extname(rawName).toLowerCase()
-    if (!IMAGE_EXTENSIONS.has(ext)) {
-      sendJson(response, 400, { error: 'bad-type' })
-      return
-    }
+
     const chunks: Buffer[] = []
     let total = 0
     try {
@@ -398,11 +415,36 @@ function handleUpload() {
       sendJson(response, 400, { error: 'read-failed' })
       return
     }
+
+    const payload = Buffer.concat(chunks)
+    // Gate on decoded content (magic numbers), not the client-supplied filename.
+    const ext = sniffImageFormat(payload)
+    if (ext === null) {
+      sendJson(response, 400, { error: 'not-an-image' })
+      return
+    }
+
     const dir = path.join(os.homedir(), '.dsh', 'dsh-background', 'uploads')
     mkdirSync(dir, { recursive: true })
+
+    // Defend the uploads dir against unauthenticated disk-fill DoS.
+    let existing = 0
+    try {
+      for (const entry of await readdir(dir, { withFileTypes: true })) {
+        if (!entry.isFile()) continue
+        const info = await stat(path.join(dir, entry.name))
+        existing += info.size
+      }
+    } catch { /* first write: dir missing or empty */ }
+
+    if (existing + payload.length > MAX_UPLOAD_DIR_BYTES) {
+      sendJson(response, 507, { error: 'quota-exceeded' })
+      return
+    }
+
     const safe = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
     const full = path.join(dir, safe)
-    writeFileSync(full, Buffer.concat(chunks))
+    writeFileSync(full, payload)
     sendJson(response, 200, { path: full })
   }
 }
