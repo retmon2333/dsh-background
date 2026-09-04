@@ -10,7 +10,6 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import { createReadStream, mkdirSync, writeFileSync } from 'node:fs'
 import { readdir, stat } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
@@ -46,7 +45,10 @@ export function defaultWallpaperPath(): string {
 }
 
 /** Settings namespace owned by this plugin (no dots allowed by the brand). */
-const NS = settingsNamespace('dsh-background')
+const NS = 'dsh-background'
+
+/** Owner scope shape for reading the resolved settings section. */
+type BackgroundScope = { get(): BackgroundSettings }
 
 const ROUTE_LIST = '/dsh-background/folder/list'
 /** Must NOT end with `/` — webserver prefix match is `p` or `p/<rest>`. */
@@ -85,8 +87,8 @@ function requireGet(request: IncomingMessage, response: ServerResponse): boolean
   return false
 }
 
-function sectionOf(settings: { get(ns: typeof NS): BackgroundSettings | undefined }): BackgroundSettings {
-  return settings.get(NS) ?? BACKGROUND_DEFAULTS
+function sectionOf(settings: BackgroundScope): BackgroundSettings {
+  return settings.get() ?? BACKGROUND_DEFAULTS
 }
 
 /** List top-level image files of one folder, sorted by name. */
@@ -120,7 +122,7 @@ async function listFolderImages(folder: string): Promise<Array<{
   return images
 }
 
-function handleList(settings: { get(ns: typeof NS): BackgroundSettings | undefined }) {
+function handleList(settings: BackgroundScope) {
   return async (request: IncomingMessage, response: ServerResponse) => {
     if (!requireGet(request, response)) return
     const folder = sectionOf(settings).folderPath
@@ -169,7 +171,7 @@ function pipeFile(
     .pipe(response)
 }
 
-function handleFolderImage(settings: { get(ns: typeof NS): BackgroundSettings | undefined }) {
+function handleFolderImage(settings: BackgroundScope) {
   return async (request: IncomingMessage, response: ServerResponse) => {
     if (!requireGet(request, response)) return
     const folder = sectionOf(settings).folderPath
@@ -234,7 +236,7 @@ function handleFolderImage(settings: { get(ns: typeof NS): BackgroundSettings | 
   }
 }
 
-function handleFile(settings: { get(ns: typeof NS): BackgroundSettings | undefined }) {
+function handleFile(settings: BackgroundScope) {
   return async (request: IncomingMessage, response: ServerResponse) => {
     if (!requireGet(request, response)) return
     const imagePath = sectionOf(settings).imagePath
@@ -452,7 +454,7 @@ function handleUpload() {
 /** Register routes; returns the combined disposer. */
 function mountRoutes(
   webServer: { register(route: { kind: 'exact' | 'prefix'; path: string; handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void> }): () => void },
-  settings: { get(ns: typeof NS): BackgroundSettings | undefined },
+  settings: BackgroundScope,
 ): () => void {
   const disposers = [
     webServer.register({ kind: 'exact', path: ROUTE_LIST, handler: handleList(settings) }),
@@ -475,7 +477,7 @@ export function apply(ctx: Context, config: Partial<BackgroundSettings> = {}): v
   const wallpaper = defaultWallpaperPath()
   mkdirSync(path.dirname(wallpaper), { recursive: true })
   ctx.inject(['settings', 'webServer'], (c) => {
-    c.settings.register(NS, BackgroundSettingsSchema, {
+    const scope = c.settings.register(NS, BackgroundSettingsSchema, {
       base: {
         ...BACKGROUND_DEFAULTS,
         mode: 'image',
@@ -483,6 +485,6 @@ export function apply(ctx: Context, config: Partial<BackgroundSettings> = {}): v
         ...config,
       },
     })
-    c.effect(() => mountRoutes(c.webServer, c.settings), 'dsh-background: http routes')
+    c.effect(() => mountRoutes(c.webServer, scope), 'dsh-background: http routes')
   })
 }

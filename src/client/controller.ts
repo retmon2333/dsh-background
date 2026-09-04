@@ -113,6 +113,8 @@ export class BackgroundController {
   private fadeToken = 0
   private fading = false
   private pendingUrl: string | null = null
+  /** Bumped whenever the single-image path changes, so the /file URL stays unique. */
+  private imageRev = 0
 
   constructor(scope: SettingsScope<BackgroundSettings>) {
     this.scope = scope
@@ -268,6 +270,11 @@ export class BackgroundController {
       ? snap.value
       : BACKGROUND_DEFAULTS
     const prev = this.state.settings
+    // Single-image mode: the wallpaper URL is a constant route; bump a revision
+    // when the path changes so paintUrl sees a different URL and re-draws.
+    if (settings.mode === 'image' && prev.imagePath !== settings.imagePath) {
+      this.imageRev += 1
+    }
     this.publish({
       ...this.state,
       settings,
@@ -366,7 +373,8 @@ export class BackgroundController {
 
   private fileUrl(settings: BackgroundSettings): string | null {
     if (settings.imagePath === '') return null
-    return ROUTE_FILE
+    // ?v= bumps the request so the host re-reads the (possibly changed) image path.
+    return `${ROUTE_FILE}?v=${this.imageRev}`
   }
 
   private currentFolderUrl(): string | null {

@@ -43,6 +43,7 @@ body[data-dsh-background='on'] {
   --dsw-alias-bg-base: var(--dsh-bg-surface) !important;
   --dsw-alias-bg-layer-1: var(--dsh-bg-surface) !important;
   --dsw-alias-bg-layer-2: var(--dsh-bg-surface) !important;
+  --dsw-alias-bg-layer-3: var(--dsh-bg-surface) !important;
 }
 
 /* Sidebar only when extendChrome is on */
@@ -54,6 +55,37 @@ body[data-dsh-background='on'][data-dsh-background-extend='on'] {
 body[data-dsh-background='on'][data-dsh-background-composer='on'] {
   --dsw-specific-input-major: var(--dsh-bg-surface) !important;
   --dsw-specific-tip: var(--dsh-bg-surface) !important;
+}
+
+/* When extendComposer is on, Markdown / code-block surfaces also turn
+   translucent so the wallpaper shows through them. Bases are picked per
+   theme, then blended with the user's surface opacity. */
+body[data-dsh-background='on'][data-dsh-background-composer='on'] {
+  --dsh-bg-code: color-mix(in srgb, var(--dsh-bg-surface) 55%, #202024) !important;
+  --dsh-bg-code-banner: color-mix(in srgb, var(--dsh-bg-surface) 42%, #202024) !important;
+  --dsh-bg-code-soft: color-mix(in srgb, var(--dsh-bg-surface) 30%, #43454a) !important;
+  --dsh-bg-bubble: color-mix(in srgb, var(--dsh-bg-surface) 55%, #2c2c2e) !important;
+  --dsh-bg-bubble-strong: color-mix(in srgb, var(--dsh-bg-surface) 40%, #43454a) !important;
+  --dsh-bg-card: color-mix(in srgb, var(--dsh-bg-surface) 40%, #353638) !important;
+  --dsw-alias-markdown-code-block: var(--dsh-bg-code);
+  --dsw-alias-markdown-code-block-banner: var(--dsh-bg-code-banner);
+  --dsw-alias-markdown-code-segment-selected: var(--dsh-bg-code-banner);
+  --dsw-alias-markdown-code-segment-unselected: var(--dsh-bg-code);
+  --dsw-alias-markdown-inline-code: var(--dsh-bg-code-banner);
+  --dsw-alias-markdown-citation: var(--dsh-bg-code-soft);
+  --dsw-alias-markdown-tag: var(--dsh-bg-code-soft);
+  --dsw-alias-markdown-placeholder: var(--dsh-bg-code-soft);
+  --dsw-specific-bubble: var(--dsh-bg-bubble);
+  --dsw-specific-bubble-highlight: var(--dsh-bg-bubble-strong);
+  --dsw-alias-bg-module-platform: var(--dsh-bg-card);
+}
+body[data-dsh-background='on'][data-dsh-background-composer='on']:not([data-ds-dark-theme]) {
+  --dsh-bg-code: color-mix(in srgb, var(--dsh-bg-surface) 55%, #eef1f5) !important;
+  --dsh-bg-code-banner: color-mix(in srgb, var(--dsh-bg-surface) 42%, #eef1f5) !important;
+  --dsh-bg-code-soft: color-mix(in srgb, var(--dsh-bg-surface) 30%, #aeb4bb) !important;
+  --dsh-bg-bubble: color-mix(in srgb, var(--dsh-bg-surface) 55%, #edf3fe) !important;
+  --dsh-bg-bubble-strong: color-mix(in srgb, var(--dsh-bg-surface) 40%, #d3e2ff) !important;
+  --dsh-bg-card: color-mix(in srgb, var(--dsh-bg-surface) 40%, #f5f6f7) !important;
 }
 
 /* Wallpaper crossfade is driven by inline styles from the user setting;
