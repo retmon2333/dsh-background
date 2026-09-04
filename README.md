@@ -22,11 +22,9 @@ DeepSeek Harness（DSH）Web 背景壁纸插件。标准 DSH bundle + client 插
 
 ### 主界面
 
-<p align="center">
-  <img src="./3.jpg" alt="主界面 · 对话与壁纸特效" width="48%" />
-  <img src="./4.jpg" alt="主界面 · 轨迹等页面透出壁纸" width="48%" />
-</p>
 
+<img src="./3.jpg" alt="主界面 · 对话与壁纸特效"  />
+<img src="./4.jpg" alt="主界面 · 轨迹等页面透出壁纸"  />
 ---
 
 ## 特性
