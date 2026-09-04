@@ -200,11 +200,33 @@ dsh --profile web --dump-config | Select-String -Pattern "background"
 - 重启并 F5 后出现 **设置 → 背景**
 - 配置图片后主界面透出壁纸／特效
 
+HTTP 路由自检（宿主启动后、`http://127.0.0.1:3080`）：
+
+```powershell
+# 单图模式：返回图片字节（未配置时 400 image-not-configured）
+curl -o NUL -w "%{http_code}`n" http://127.0.0.1:3080/dsh-background/file
+
+# 文件夹模式：返回 JSON { folder, images[] }（未配置时 400）
+curl http://127.0.0.1:3080/dsh-background/folder/list
+```
+
+> macOS/Linux 用 `curl -o /dev/null -w "%{http_code}\n" ...`。
+
 ---
 
 ## 常见问题
 
 - **设置里没有「背景」**：确认 `add` 成功且 dump-config 有条目；必须完整重启 `dsh web`，再 F5。
+- **pnpm 报 `allowBuilds`／`ignored build scripts`**：DSH 默认拦截 git 插件的 `prepare` 构建脚本。把报错里打印的包名（通常是本插件 `dsh-background`）加进 profile 的 `pnpm-workspace.yaml`：
+
+  ```yaml
+  allowBuilds:
+    - dsh-background
+  ```
+
+  文件位于 `%USERPROFILE%\.dsh\profiles\web\pnpm-workspace.yaml`（Linux/macOS：`~/.dsh/profiles/web/pnpm-workspace.yaml`），改完重新 `dsh plugin --profile web add github:retmon2333/dsh-background`。
+
+- **Windows 装失败报 `ERR_PNPM_EPERM: symlink`**：多为系统符号链接权限问题。开启「开发者模式」（设置 → 隐私与安全 → 开发者选项），或以管理员身份运行终端；或改用无空格路径的 `link:` 本地安装。
 - **改了代码不生效**：`pnpm build` 后重启宿主（不要只刷页面）。
 - **路径含空格装失败**：用 junction 的无空格 `link:`。
 - **重装后还是旧设置**：删 `settings.yaml` 里的 `dsh-background:` 段。

@@ -25,11 +25,7 @@
     "assets",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE",
-    "1.jpg",
-    "2.jpg",
-    "3.jpg",
-    "4.jpg"
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
@@ -41,7 +37,7 @@
   "homepage": "https://github.com/retmon2333/dsh-background#readme",
   "license": "MIT",
   "engines": {
-    "node": "^22.19.0 || >=24.0.0"
+    "node": ">=20"
   },
   "scripts": {
     "build": "tsdown",
@@ -62,20 +58,15 @@
       ]
     }
   },
-  "dependencies": {
-    "@deepseek-ai/cordis": "4.0.2",
-    "@deepseek-ai/dsh-brand": "0.1.1-rc.2",
-    "@deepseek-ai/dsh-invariants": "0.1.1-rc.2",
-    "@deepseek-ai/dsh-settings": "0.1.1-rc.2",
-    "@deepseek-ai/schemastery": "^3.18.1"
-  },
   "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-settings": "^0.1.1-rc.2",
+    "@deepseek-ai/schemastery": "^3.18.1",
     "@deepseek-ai/dsh-client-locale": "*",
     "@deepseek-ai/dsh-client-runtime": "*",
     "@deepseek-ai/dsh-client-ui-settings": "*",
     "@deepseek-ai/dsh-client-ui-settings-general": "*",
-    "@deepseek-ai/dsh-client-ui-slots": "*",
-    "react": "^18.2.0"
+    "@deepseek-ai/dsh-client-ui-slots": "*"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-client-locale": { "optional": true },
