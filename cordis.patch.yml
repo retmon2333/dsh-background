@@ -1,0 +1,6 @@
+# dsh-background bundle patch: inserts the background plugin into a profile's
+# loader layer stack. `dsh plugin --profile <name> add dsh-background` activates
+# it automatically; the host must be restarted once for the new entry to load.
+- insert:
+    - id: dsh-background
+      name: dsh-background
